@@ -1,6 +1,7 @@
 const User = require('../models/userModel');
 const Joi = require('joi');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken')
 
 const register = async (req, res) => {
     const schema = Joi.object({
@@ -9,7 +10,7 @@ const register = async (req, res) => {
         password: Joi.string().min(3).required(),
     });
     const {error} = schema.validate(req.body)
-    if (error) return res.status(400).send(error.details[0].message);
+    if (error) return res.status(400).json(error.details[0].message);
 
     console.log(req.body)
     const {name, email, password} = req.body;
@@ -20,7 +21,14 @@ const register = async (req, res) => {
 
         user = new User({name, email, password})
         await user.save()
-
+        const token = jwt.sign({user}, process.env.JWT_SECRET, {
+            expiresIn: '1h'
+        });
+        res.cookie('token', token, {
+            httpOnly: true,
+            sameSite: 'strict',
+            maxAge: 3600000
+        });
         res.status(201).json(user)
     } catch (error) {
         res.status(500).json({message: error, place: 'save gone wrong'})
@@ -32,17 +40,27 @@ const login = async (req, res) =>{
         email: Joi.string().email().required(),
         password: Joi.string().min(3).required(),
     });
-    const {error} = schema.validate(req.body);
-    if (error) return res.status(400).send(error.details[0].message)
     const {email, password} = req.body;
+    const {error} = schema.validate({email, password});
+    if (error) return res.status(400).json(error.details[0].message)
 
     try{
         let user = await User.findOne({email});
-        if (!user) return res.status(400).send('Invalid email');
+        if (!user) return res.status(401).json('Invalid email');
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).send('Invalid password');
-        res.status(200).send('You have logged in');
+        if (!isMatch) return res.status(401).json('Invalid password');
+
+        const token = jwt.sign({user}, process.env.JWT_SECRET, {
+            expiresIn: '1h'
+        });
+        res.cookie('token', token, {
+            httpOnly: true,
+            sameSite: 'strict',
+            maxAge: 3600000
+        });
+
+        res.header('Authorization', `Bearer ${token}`).status(200).json(`You have logged in, your token ${token}`);
     }catch (e) {
         res.status(500).send(`Server error ${e}`)
     }
