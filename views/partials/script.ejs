@@ -1,0 +1,22 @@
+<script>
+    const message = "<%= message %>"; // Pobranie komunikatu z Node.js
+    if (message) {
+        showNotification(message); // Wywołanie funkcji, jeśli jest komunikat
+    }
+
+    function showNotification(message) {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.classList.add('show');
+
+        if (<%= bad %>) {
+            notification.classList.add('error');
+        } else {
+            notification.classList.remove('error');
+        }
+
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, 3000); // 3 sekundy
+    }
+</script>
