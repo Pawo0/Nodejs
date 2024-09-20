@@ -12,8 +12,8 @@ const mainPageRoutes = require('./routes/mainPageRoutes')
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(express.static('./public'));
-app.use(cookieParser());
 
+app.use(cookieParser());
 
 app.use('/user', userRoutes);
 app.use('/', mainPageRoutes)

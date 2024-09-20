@@ -33,9 +33,10 @@ async function sendForm (event) {
             console.log(headers)
             window.location.href = "/";
         } else {
+            console.log(result)
             errorDiv.textContent = result.message;
             if (this.dataset.id === 'register'){
-                showNotification('Invalid format')
+                showNotification(result.message)
             }else showNotification('Invalid email or password');
         }
     } catch (error) {

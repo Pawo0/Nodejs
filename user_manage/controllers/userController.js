@@ -5,19 +5,22 @@ const jwt = require('jsonwebtoken')
 
 const register = async (req, res) => {
     const schema = Joi.object({
-        name: Joi.string().required(),
         email: Joi.string().email().required(),
+        name: Joi.string().required(),
         password: Joi.string().min(3).required(),
     });
     const {error} = schema.validate(req.body)
-    if (error) return res.status(400).json(error.details[0].message);
-
+    if (error) {
+        console.log(error.details[0].message)
+        return res.status(400).json({message : error.details[0].message});
+    }
+    console.log('bb')
     console.log(req.body)
     const {name, email, password} = req.body;
 
     try {
         let user = await User.findOne({email});
-        if (user) return res.status(400).send('User already exist!')
+        if (user) return res.status(400).json({message : 'User with that email already exist!'})
 
         user = new User({name, email, password})
         await user.save()
@@ -31,6 +34,7 @@ const register = async (req, res) => {
         });
         res.status(201).json(user)
     } catch (error) {
+        console.log(error)
         res.status(500).json({message: error, place: 'save gone wrong'})
     }
 }
