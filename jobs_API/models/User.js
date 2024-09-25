@@ -31,13 +31,12 @@ UserSchema.pre('save', async function (next){
 })
 
 UserSchema.methods.comparePassword = async function comparePassword(password){
-    console.log('here we are')
     return await bcrypt.compare(password,this.password)
 
 }
 
 UserSchema.methods.createJWT = function (){
-    return jwt.sign({UserId: this._id, name: this.name}, process.env.JWT_SECRET, {
+    return jwt.sign({userId: this._id, name: this.name}, process.env.JWT_SECRET, {
         expiresIn: '1d'
     })
 }
